@@ -7,8 +7,10 @@ from sympy.core.numbers import (E, I, Rational, oo, pi, Integer, all_close)
 from sympy.core.relational import (Eq, Gt, Ne, Ge)
 from sympy.core.singleton import S
 from sympy.core.sorting import ordered
+from sympy import Interval, Symbol, S, sin, pi, stationary_points
 from sympy.core.symbol import (Dummy, Symbol, symbols)
 from sympy.core.sympify import sympify
+from sympy.sets.fancysets import Integers, Reals
 from sympy.functions.elementary.complexes import (Abs, arg, im, re, sign, conjugate)
 from sympy.functions.elementary.exponential import (LambertW, exp, log)
 from sympy.functions.elementary.hyperbolic import (HyperbolicFunction,
@@ -3530,3 +3532,15 @@ def test_issue_22628():
 
 def test_issue_25781():
     assert solve(sqrt(x/2) - x) == [0, S.Half]
+
+def test_issue_26077():
+    x = Symbol('x', real = True)
+    _n = Symbol('_n', real = True)
+    result = stationary_points(x*cot(5*x, x, S.Reals))
+
+    expected_result = ConditionSet(x, Eq(x*(-5*cot(5*x)**2 -5) + cot(5*x), 0),
+                                   Complement(Reals,
+                                              Union(ImageSet(Lambda(_n, simplify(2*_n*pi/5)), Integers),
+                                                    ImageSet(Lambda(_n, simplify(2*_n*pi/5 + pi/5)), Integers))))
+
+    assert result == expected_result
